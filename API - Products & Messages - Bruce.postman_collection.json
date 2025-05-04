@@ -1,0 +1,982 @@
+{
+	"info": {
+		"_postman_id": "0bd1c601-8f6e-4002-8ada-6c0dc57bd150",
+		"name": "API - Products & Messages - Bruce",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "27064108"
+	},
+	"item": [
+		{
+			"name": "Products API - GET",
+			"item": [
+				{
+					"name": "GET All Products",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Parse the response body as JSON",
+									"const responseJson = pm.response.json();",
+									"",
+									"// Check if the status code is 200 OK",
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Check if the 'data' array exists and is not empty",
+									"if (responseJson && Array.isArray(responseJson.data) && responseJson.data.length > 0) {",
+									"    // Extract the 'id' of the first product in the data array",
+									"    const firstProductId = responseJson.data[0].id;",
+									"",
+									"    // Store the extracted ID into the collection variable 'first_product_id'",
+									"    pm.collectionVariables.set(\"first_product_id\", firstProductId);",
+									"",
+									"    console.log(\"Extracted first product ID: \" + firstProductId);",
+									"    pm.test(\"First product ID extracted and stored\", true);",
+									"} else {",
+									"    console.log(\"Data array is missing or empty.\");",
+									"    pm.test(\"First product ID extracted and stored\", false); // Mark test as failed if data is missing/empty",
+									"}",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_BASE_URL}}/products",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"products"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Single Product by ID (From List)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Check if the 'first_product_id' variable is set",
+									"const productId = pm.collectionVariables.get(\"first_product_id\");",
+									"if (!productId) {",
+									"    console.log(\"Warning: first_product_id is not set. Please run the 'GET All Products (Extract First ID)' request first.\");",
+									"    // You might want to add a test or fail the request here if the ID is critical",
+									"}",
+									"console.log(\"Attempting to GET product with ID: \" + productId);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Check if the status code is 200 OK",
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Parse the response body as JSON",
+									"const responseJson = pm.response.json();",
+									"",
+									"// Check if the response is a single object (not an array)",
+									"pm.test(\"Response is a single product object\", function () {",
+									"    pm.expect(responseJson).to.be.an('object');",
+									"    pm.expect(Array.isArray(responseJson)).to.be.false;",
+									"});",
+									"",
+									"// Check if the returned ID matches the ID used in the request",
+									"const requestedId = pm.collectionVariables.get(\"first_product_id\");",
+									"if (responseJson && responseJson.id) {",
+									"    pm.test(\"Returned product ID matches requested ID\", function () {",
+									"        pm.expect(responseJson.id).to.equal(requestedId);",
+									"    });",
+									"} else {",
+									"     pm.test(\"Response body contains product ID\", false);",
+									"}",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_BASE_URL}}/products/{{first_product_id}}",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"products",
+								"{{first_product_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Products - Page 3",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_BASE_URL}}/products?page=3",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"products"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "3"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Products - Page 3333 (Non-existent)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_BASE_URL}}/products?page=3333",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"products"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "3333"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Products - Price Between 10 and 50",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_BASE_URL}}/products?between=price,10,50",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"products"
+							],
+							"query": [
+								{
+									"key": "between",
+									"value": "price,10,50"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Products - Price Between 99999 and 100000 (No Results Expected)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_BASE_URL}}/products?between=price,99999,100000",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"products"
+							],
+							"query": [
+								{
+									"key": "between",
+									"value": "price,99999,100000"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Products - Sort by Name ASC",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_BASE_URL}}/products?sort=name,asc",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"products"
+							],
+							"query": [
+								{
+									"key": "sort",
+									"value": "name,asc"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Products - Sort by Name DESC",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_BASE_URL}}/products?sort=name,desc",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"products"
+							],
+							"query": [
+								{
+									"key": "sort",
+									"value": "name,desc"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Products - Sort by Price ASC",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_BASE_URL}}/products?sort=price,asc",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"products"
+							],
+							"query": [
+								{
+									"key": "sort",
+									"value": "price,asc"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Products - Sort by Price DESC",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_BASE_URL}}/products?sort=price,desc",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"products"
+							],
+							"query": [
+								{
+									"key": "sort",
+									"value": "price,desc"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Products - Multiple Params (Page, Price, Sort)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_BASE_URL}}/products?page=2&between=price,20,80&sort=name,asc",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"products"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "2"
+								},
+								{
+									"key": "between",
+									"value": "price,20,80"
+								},
+								{
+									"key": "sort",
+									"value": "name,asc"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Products - Multiple Params (Page, Price)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_BASE_URL}}/products?page=3&between=price,10,150",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"products"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "3"
+								},
+								{
+									"key": "between",
+									"value": "price,10,150"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Products - Invalid 'between' Format",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_BASE_URL}}/products?between=price,10",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"products"
+							],
+							"query": [
+								{
+									"key": "between",
+									"value": "price,10",
+									"description": "Missing end value"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Products - Invalid 'between' Format (Non-numeric)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_BASE_URL}}/products?between=price,abc,xyz",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"products"
+							],
+							"query": [
+								{
+									"key": "between",
+									"value": "price,abc,xyz",
+									"description": "Non-numeric values"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Products - Invalid 'sort' Format (Missing direction)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_BASE_URL}}/products?sort=name",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"products"
+							],
+							"query": [
+								{
+									"key": "sort",
+									"value": "name",
+									"description": "Missing direction (asc/desc)"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Products - Invalid 'sort' Format (Invalid direction)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_BASE_URL}}/products?sort=name,up",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"products"
+							],
+							"query": [
+								{
+									"key": "sort",
+									"value": "name,up",
+									"description": "Invalid direction 'up'"
+								}
+							]
+						},
+						"description": "Uses an example valid product ID provided."
+					},
+					"response": []
+				},
+				{
+					"name": "GET Single Product - Non-existent ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_BASE_URL}}/products/non_existent_id_12345",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"products",
+								"non_existent_id_12345"
+							]
+						},
+						"description": "Expected to return 404 Not Found."
+					},
+					"response": []
+				},
+				{
+					"name": "GET Single Product - By Name (Expected 404)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_BASE_URL}}/products/Sledgehammer",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"products",
+								"Sledgehammer"
+							]
+						},
+						"description": "Tests if fetching by name is not supported, expected 404."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Messages API - POST",
+			"item": [
+				{
+					"name": "POST Message - Valid Request Body",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test User\",\n    \"subject\": \"Test Subject - Valid\",\n    \"message\": \"This is a test message with all required fields.\",\n    \"email\": \"testuser@example.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_BASE_URL}}/messages",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"messages"
+							]
+						},
+						"description": "Tests POSTing a message"
+					},
+					"response": []
+				},
+				{
+					"name": "POST Message - Missing 'name' Field",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"subject\": \"Test Subject - Missing Name\",\n    \"message\": \"This message is missing the name field.\",\n    \"email\": \"testuser@example.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_BASE_URL}}/messages",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"messages"
+							]
+						},
+						"description": "Tests POSTing a message without the required 'name' property in the body."
+					},
+					"response": []
+				},
+				{
+					"name": "POST Message - Missing 'subject' Field",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test User\",\n    \"message\": \"This message is missing the subject field.\",\n    \"email\": \"testuser@example.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_BASE_URL}}/messages",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"messages"
+							]
+						},
+						"description": "Tests POSTing a message without the required 'subject' property in the body."
+					},
+					"response": []
+				},
+				{
+					"name": "POST Message - Missing 'message' Field",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test User\",\n    \"subject\": \"Test Subject - Missing Message\",\n    \"email\": \"testuser@example.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_BASE_URL}}/messages",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"messages"
+							]
+						},
+						"description": "Tests POSTing a message without the required 'message' property in the body."
+					},
+					"response": []
+				},
+				{
+					"name": "POST Message - Missing 'email' Field",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test User\",\n    \"subject\": \"Test Subject - Missing Email\",\n    \"message\": \"This message is missing the email field.\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_BASE_URL}}/messages",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"messages"
+							]
+						},
+						"description": "Tests POSTing a message without the required 'email' property in the body."
+					},
+					"response": []
+				},
+				{
+					"name": "POST Message - Invalid 'email' Format",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test User\",\n    \"subject\": \"Test Subject - Invalid Email\",\n    \"message\": \"This message has an invalid email format.\",\n    \"email\": \"aa.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_BASE_URL}}/messages",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"messages"
+							]
+						},
+						"description": "Tests POSTing a message with an 'email' property value that is not a valid email format."
+					},
+					"response": []
+				},
+				{
+					"name": "POST Message - Wrong Data Type for 'subject' (integer)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test User\",\n    \"subject\": 123,  \n    \"message\": \"This message has a number for subject.\",\n    \"email\": \"testuser@example.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_BASE_URL}}/messages",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"messages"
+							]
+						},
+						"description": "Tests POSTing a message where the 'subject' property is sent as a number instead of a string."
+					},
+					"response": []
+				},
+				{
+					"name": "POST Message - Wrong Data Type for 'message' (Boolean)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test User\",\n    \"subject\": \"Test Subject\",  \n    \"message\": true,\n    \"email\": \"testuser@example.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_BASE_URL}}/messages",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"messages"
+							]
+						},
+						"description": "Tests POSTing a message where the 'message' property is sent as a boolean instead of a string."
+					},
+					"response": []
+				},
+				{
+					"name": "POST Message - Contains Unexpected Field",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test User\",\n    \"subject\": \"Test Subject\",  \n    \"message\": \"This message has an extra field.\",\n    \"email\": \"testuser@example.com\",\n    \"mood\": \"happy\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_BASE_URL}}/messages",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"messages"
+							]
+						},
+						"description": "Tests POSTing a message body that includes a field not defined in the API documentation."
+					},
+					"response": []
+				},
+				{
+					"name": "POST Message - Empty Request Body",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_BASE_URL}}/messages",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"messages"
+							]
+						},
+						"description": "Tests POSTing with an empty JSON object as the request body."
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "API_BASE_URL",
+			"value": "https://api.practicesoftwaretesting.com",
+			"type": "string"
+		},
+		{
+			"key": "first_product_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "auth_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user_email",
+			"value": "YOUR_EMAIL",
+			"type": "string"
+		},
+		{
+			"key": "user_password",
+			"value": "YOUR_PASSWORD",
+			"type": "string"
+		}
+	]
+}
